@@ -43,11 +43,34 @@ namespace GLMS.Services
                     "Active contracts cannot already be expired.");
             }
 
+            contract.Status = DetermineContractStatus(contract);
             _context.Contracts.Add(contract);
 
             await _context.SaveChangesAsync();
 
             return ServiceResult.Ok();
+        }
+
+        private ContractStatus DetermineContractStatus(Contract contract)
+        {
+            if (contract.Status == ContractStatus.OnHold)
+            {
+                return ContractStatus.OnHold;
+            }
+
+            var today = DateTime.Now;
+
+            if (today < contract.StartDate)
+            {
+                return ContractStatus.Draft;
+            }
+
+            if (today > contract.EndDate)
+            {
+                return ContractStatus.Expired;
+            }
+
+            return ContractStatus.Active;
         }
 
         public bool Exists(int id)

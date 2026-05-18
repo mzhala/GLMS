@@ -12,7 +12,8 @@ namespace GLMS.Models
         public string Name { get; set; }
 
         [Required]
-        [StringLength(200)]
+        [Phone]
+        [Display(Name = "Contact Details")] 
         public string ContactDetails { get; set; }
 
         [Required]

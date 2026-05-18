@@ -62,46 +62,49 @@ namespace GLMS.Controllers
         public async Task<IActionResult> Create(
             [Bind("Id,ClientId,StartDate,EndDate,Status,ServiceLevel")]
             Contract contract,
-            IFormFile agreementFile)
+            IFormFile? agreementFile)
         {
+            if (agreementFile == null)
+            {
+                ModelState.AddModelError(
+                    "",
+                    "Agreement PDF is required.");
+            }
+
             if (ModelState.IsValid)
             {
-                if (agreementFile != null)
+                var extension = Path.GetExtension(agreementFile.FileName);
+
+                if (extension.ToLower() != ".pdf")
                 {
-                    var extension =
-                        Path.GetExtension(agreementFile.FileName);
+                    ModelState.AddModelError(
+                        "",
+                        "Only PDF files are allowed.");
 
-                    if (extension.ToLower() != ".pdf")
-                    {
-                        ModelState.AddModelError(
-                            "",
-                            "Only PDF files are allowed.");
+                    LoadClientsDropdown();
 
-                        LoadClientsDropdown();
-
-                        return View(contract);
-                    }
-
-                    var fileName =
-                        Guid.NewGuid().ToString() + ".pdf";
-
-                    var uploadPath = Path.Combine(
-                        _environment.WebRootPath,
-                        "uploads",
-                        "contracts");
-
-                    var filePath = Path.Combine(
-                        uploadPath,
-                        fileName);
-
-                    using (var stream =
-                           new FileStream(filePath, FileMode.Create))
-                    {
-                        await agreementFile.CopyToAsync(stream);
-                    }
-
-                    contract.AgreementFilePath = fileName;
+                    return View(contract);
                 }
+
+                var fileName =
+                    Guid.NewGuid().ToString() + ".pdf";
+
+                var uploadPath = Path.Combine(
+                    _environment.WebRootPath,
+                    "uploads",
+                    "contracts");
+
+                var filePath = Path.Combine(
+                    uploadPath,
+                    fileName);
+
+                using (var stream =
+                       new FileStream(filePath, FileMode.Create))
+                {
+                    await agreementFile.CopyToAsync(stream);
+                }
+
+                contract.AgreementFilePath = fileName;
 
                 var result = await _service.CreateAsync(contract);
 
@@ -149,7 +152,7 @@ namespace GLMS.Controllers
         int id,
         [Bind("Id,ClientId,StartDate,EndDate,Status,ServiceLevel,AgreementFilePath")]
         Contract contract,
-        IFormFile agreementFile)
+        IFormFile? agreementFile)
         {
             if (id != contract.Id)
             {
@@ -160,6 +163,17 @@ namespace GLMS.Controllers
             {
                 if (agreementFile != null)
                 {
+                    if (agreementFile == null)
+                    {
+                        ModelState.AddModelError(
+                            "",
+                            "Agreement PDF is required.");
+
+                        LoadClientsDropdown();
+
+                        return View(contract);
+                    }
+
                     var extension = Path.GetExtension(agreementFile.FileName);
 
                     if (extension.ToLower() != ".pdf")

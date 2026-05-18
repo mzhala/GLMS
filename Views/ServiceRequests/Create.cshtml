@@ -1,8 +1,17 @@
 ﻿@model GLMS.Models.ServiceRequest
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+
 @using GLMS.Models.Enums
 @{
     ViewData["Title"] = "Create";
 }
+
 
 <h1>Create</h1>
 
