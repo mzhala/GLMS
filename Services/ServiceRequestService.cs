@@ -9,10 +9,14 @@ namespace GLMS.Services
     public class ServiceRequestService
     {
         private readonly ApplicationDbContext _context;
+        private readonly CurrencyService _currencyService;
 
-        public ServiceRequestService(ApplicationDbContext context)
+        public ServiceRequestService(
+        ApplicationDbContext context,
+        CurrencyService currencyService)
         {
             _context = context;
+            _currencyService = currencyService;
         }
 
         public async Task<List<ServiceRequest>> GetAllAsync()
@@ -48,6 +52,17 @@ namespace GLMS.Services
             {
                 return ServiceResult.Fail("Contract is not active.");
             }
+
+            var convertedAmount = await _currencyService.ConvertUsdToZar(serviceRequest.CostUSD);
+
+            if (convertedAmount == null)
+            {
+                return ServiceResult.Fail(
+                    "Unable to retrieve exchange rate.");
+            }
+
+            serviceRequest.CostZAR =
+                Math.Round(convertedAmount.Value, 2);
 
             _context.ServiceRequests.Add(serviceRequest);
 
@@ -130,6 +145,19 @@ namespace GLMS.Services
                         "In Progress requests can only move to Completed or Cancelled.");
                 }
             }
+
+            var convertedAmount =
+            await _currencyService.ConvertUsdToZar(
+            serviceRequest.CostUSD);
+
+            if (convertedAmount == null)
+            {
+                return ServiceResult.Fail(
+                    "Unable to retrieve exchange rate.");
+            }
+
+            serviceRequest.CostZAR =
+                Math.Round(convertedAmount.Value, 2);
 
             _context.Entry(serviceRequest).State = EntityState.Modified;
 

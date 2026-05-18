@@ -15,6 +15,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<ServiceRequestService>();
 builder.Services.AddScoped<ContractService>();
+builder.Services.AddHttpClient<CurrencyService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
