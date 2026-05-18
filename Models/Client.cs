@@ -1,0 +1,25 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace GLMS.Models
+{
+    public class Client
+    {
+        public int Id { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        public string Name { get; set; }
+
+        [Required]
+        [StringLength(200)]
+        public string ContactDetails { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        public string Region { get; set; }
+
+        // Navigation Property
+        public ICollection<Contract> Contracts { get; set; }
+            = new List<Contract>();
+    }
+}
