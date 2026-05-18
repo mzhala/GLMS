@@ -2,6 +2,7 @@ using GLMS.Data;
 using GLMS.Services;
 using Microsoft.EntityFrameworkCore;
 using GLMS.Services;
+using GLMS.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<ServiceRequestService>();
-
+builder.Services.AddScoped<ContractService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

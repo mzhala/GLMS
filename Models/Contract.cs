@@ -24,6 +24,7 @@ namespace GLMS.Models
         [Required]
         public ServiceLevel? ServiceLevel { get; set; }
 
+        [Display(Name = "Agreement File")]
         public string? AgreementFilePath { get; set; }
 
         // Navigation Properties

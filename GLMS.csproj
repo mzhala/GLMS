@@ -11,7 +11,7 @@
     <Folder Include="Migrations\" />
     <Folder Include="ViewModels\" />
     <Folder Include="Repositories\" />
-    <Folder Include="wwwroot\uploads\" />
+    <Folder Include="wwwroot\uploads\contracts\" />
   </ItemGroup>
 
   <ItemGroup>
