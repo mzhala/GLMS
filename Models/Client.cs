@@ -4,6 +4,7 @@ namespace GLMS.Models
 {
     public class Client
     {
+        [Display(Name = "Client Id")]
         public int Id { get; set; }
 
         [Required]

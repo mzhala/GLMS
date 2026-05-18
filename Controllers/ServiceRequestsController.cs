@@ -1,29 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using GLMS.Data;
+using GLMS.Models;
+using GLMS.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using GLMS.Data;
-using GLMS.Models;
 
 namespace GLMS.Controllers
 {
     public class ServiceRequestsController : Controller
     {
+        private readonly ServiceRequestService _service;
         private readonly ApplicationDbContext _context;
 
-        public ServiceRequestsController(ApplicationDbContext context)
+        public ServiceRequestsController(
+            ServiceRequestService service,
+            ApplicationDbContext context)
         {
+            _service = service;
             _context = context;
         }
 
         // GET: ServiceRequests
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.ServiceRequests.Include(s => s.Contract);
-            return View(await applicationDbContext.ToListAsync());
+            var serviceRequests = await _service.GetAllAsync();
+            return View(serviceRequests);
         }
 
         // GET: ServiceRequests/Details/5
@@ -34,9 +35,8 @@ namespace GLMS.Controllers
                 return NotFound();
             }
 
-            var serviceRequest = await _context.ServiceRequests
-                .Include(s => s.Contract)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var serviceRequest = await _service.GetByIdAsync(id.Value);
+
             if (serviceRequest == null)
             {
                 return NotFound();
@@ -48,33 +48,34 @@ namespace GLMS.Controllers
         // GET: ServiceRequests/Create
         public IActionResult Create()
         {
-            var contracts = _context.Contracts
-            .Include(c => c.Client)
-            .Select(c => new
-            {
-                c.Id,
-                DisplayText = $"Contract {c.Id} | Service Level: {c.ServiceLevel} | Status {c.Status} | Client: {c.Client.Name}"
-            })
-            .ToList();
-
-            ViewData["ContractId"] = new SelectList(contracts, "Id", "DisplayText");
+            LoadContractsDropdown();
             return View();
         }
 
         // POST: ServiceRequests/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ContractId,Description,CostUSD,CostZAR,Status")] ServiceRequest serviceRequest)
+        public async Task<IActionResult> Create(
+            [Bind("Id,ContractId,Description,CostUSD,CostZAR,Status")]
+            ServiceRequest serviceRequest)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(serviceRequest);
-                await _context.SaveChangesAsync();
+                var result = await _service.CreateAsync(serviceRequest);
+
+                if (!result.Success)
+                {
+                    ModelState.AddModelError("", result.Message);
+
+                    LoadContractsDropdown();
+
+                    return View(serviceRequest);
+                }
+
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "Id", "Id", serviceRequest.ContractId);
+
+            LoadContractsDropdown();
             return View(serviceRequest);
         }
 
@@ -86,30 +87,25 @@ namespace GLMS.Controllers
                 return NotFound();
             }
 
-            var serviceRequest = await _context.ServiceRequests.FindAsync(id);
+            var serviceRequest = await _service.GetByIdAsync(id.Value);
+
             if (serviceRequest == null)
             {
                 return NotFound();
             }
-            var contracts = _context.Contracts
-             .Include(c => c.Client)
-             .Select(c => new
-             {
-                 c.Id,
-                 DisplayText = $"Contract {c.Id} | Service Level: {c.ServiceLevel} | Status {c.Status} | Client: {c.Client.Name}"
-             })
-             .ToList();
 
-            ViewData["ContractId"] = new SelectList(contracts, "Id", "DisplayText");
+            LoadContractsDropdown();
+
             return View(serviceRequest);
         }
 
         // POST: ServiceRequests/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,ContractId,Description,CostUSD,CostZAR,Status")] ServiceRequest serviceRequest)
+        public async Task<IActionResult> Edit(
+            int id,
+            [Bind("Id,ContractId,Description,CostUSD,CostZAR,Status")]
+            ServiceRequest serviceRequest)
         {
             if (id != serviceRequest.Id)
             {
@@ -120,23 +116,32 @@ namespace GLMS.Controllers
             {
                 try
                 {
-                    _context.Update(serviceRequest);
-                    await _context.SaveChangesAsync();
+                    var result = await _service.UpdateAsync(serviceRequest);
+
+                    if (!result.Success)
+                    {
+                        ModelState.AddModelError("", result.Message);
+
+                        LoadContractsDropdown();
+
+                        return View(serviceRequest);
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ServiceRequestExists(serviceRequest.Id))
+                    if (!_service.Exists(serviceRequest.Id))
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    throw;
                 }
+
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "Id", "Id", serviceRequest.ContractId);
+
+            LoadContractsDropdown();
+
             return View(serviceRequest);
         }
 
@@ -148,9 +153,8 @@ namespace GLMS.Controllers
                 return NotFound();
             }
 
-            var serviceRequest = await _context.ServiceRequests
-                .Include(s => s.Contract)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var serviceRequest = await _service.GetByIdAsync(id.Value);
+
             if (serviceRequest == null)
             {
                 return NotFound();
@@ -164,19 +168,25 @@ namespace GLMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var serviceRequest = await _context.ServiceRequests.FindAsync(id);
-            if (serviceRequest != null)
-            {
-                _context.ServiceRequests.Remove(serviceRequest);
-            }
+            await _service.DeleteAsync(id);
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ServiceRequestExists(int id)
+        private void LoadContractsDropdown()
         {
-            return _context.ServiceRequests.Any(e => e.Id == id);
+            var contracts = _context.Contracts
+                .Include(c => c.Client)
+                .Select(c => new
+                {
+                    c.Id,
+                    DisplayText =
+                        $"Contract {c.Id} | Service Level: {c.ServiceLevel} | Status: {c.Status} | Client: {c.Client.Name}"
+                })
+                .ToList();
+
+            ViewData["ContractId"] =
+                new SelectList(contracts, "Id", "DisplayText");
         }
     }
 }

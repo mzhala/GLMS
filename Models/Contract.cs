@@ -6,6 +6,7 @@ namespace GLMS.Models
 {
     public class Contract
     {
+        [Display(Name = "Contract Id")]
         public int Id { get; set; }
 
         [Required]

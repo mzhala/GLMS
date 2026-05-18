@@ -6,6 +6,7 @@ namespace GLMS.Models
 {
     public class ServiceRequest
     {
+        [Display(Name = "Service Request Id")]
         public int Id { get; set; }
 
         [Required]
