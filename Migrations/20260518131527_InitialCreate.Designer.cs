@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GLMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260518073828_InitialCreate")]
+    [Migration("20260518131527_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -70,10 +70,9 @@ namespace GLMS.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ServiceLevel")
-                        .IsRequired()
+                    b.Property<int>("ServiceLevel")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");

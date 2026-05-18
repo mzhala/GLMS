@@ -26,6 +26,6 @@ namespace GLMS.Models
 
         // Navigation Property
         [ForeignKey("ContractId")]
-        public Contract Contract { get; set; }
+        public Contract? Contract { get; set; }
     }
 }

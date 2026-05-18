@@ -48,7 +48,7 @@ namespace GLMS.Controllers
         // GET: Contracts/Create
         public IActionResult Create()
         {
-            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "ContactDetails");
+            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Name");
             return View();
         }
 
@@ -65,7 +65,7 @@ namespace GLMS.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "ContactDetails", contract.ClientId);
+            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Name", contract.ClientId);
             return View(contract);
         }
 
@@ -82,7 +82,7 @@ namespace GLMS.Controllers
             {
                 return NotFound();
             }
-            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "ContactDetails", contract.ClientId);
+            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Name", contract.ClientId);
             return View(contract);
         }
 

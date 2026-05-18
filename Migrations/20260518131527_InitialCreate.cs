@@ -36,7 +36,7 @@ namespace GLMS.Migrations
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    ServiceLevel = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    ServiceLevel = table.Column<int>(type: "int", maxLength: 100, nullable: false),
                     AgreementFilePath = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>

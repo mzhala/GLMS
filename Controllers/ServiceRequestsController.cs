@@ -48,7 +48,16 @@ namespace GLMS.Controllers
         // GET: ServiceRequests/Create
         public IActionResult Create()
         {
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "Id", "ServiceLevel");
+            var contracts = _context.Contracts
+            .Include(c => c.Client)
+            .Select(c => new
+            {
+                c.Id,
+                DisplayText = $"Contract {c.Id} | Service Level: {c.ServiceLevel} | Status {c.Status} | Client: {c.Client.Name}"
+            })
+            .ToList();
+
+            ViewData["ContractId"] = new SelectList(contracts, "Id", "DisplayText");
             return View();
         }
 
@@ -65,7 +74,7 @@ namespace GLMS.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "Id", "ServiceLevel", serviceRequest.ContractId);
+            ViewData["ContractId"] = new SelectList(_context.Contracts, "Id", "Id", serviceRequest.ContractId);
             return View(serviceRequest);
         }
 
@@ -82,7 +91,16 @@ namespace GLMS.Controllers
             {
                 return NotFound();
             }
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "Id", "ServiceLevel", serviceRequest.ContractId);
+            var contracts = _context.Contracts
+             .Include(c => c.Client)
+             .Select(c => new
+             {
+                 c.Id,
+                 DisplayText = $"Contract {c.Id} | Service Level: {c.ServiceLevel} | Status {c.Status} | Client: {c.Client.Name}"
+             })
+             .ToList();
+
+            ViewData["ContractId"] = new SelectList(contracts, "Id", "DisplayText");
             return View(serviceRequest);
         }
 
@@ -118,7 +136,7 @@ namespace GLMS.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "Id", "ServiceLevel", serviceRequest.ContractId);
+            ViewData["ContractId"] = new SelectList(_context.Contracts, "Id", "Id", serviceRequest.ContractId);
             return View(serviceRequest);
         }
 
