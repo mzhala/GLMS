@@ -1,12 +1,22 @@
 ﻿@model GLMS.Models.Contract
 @using GLMS.Models.Enums
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+
+
 @{
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<h1>Contract</h1>
 
-<h4>Contract</h4>
+<h4>Edit</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -55,7 +65,17 @@
                 <label class="control-label">Replace Agreement PDF</label>
                 <input type="file" name="agreementFile" class="form-control" accept=".pdf" />
             </div>
-            <div class="form-group">
+            @if (!string.IsNullOrEmpty(Model.AgreementFilePath))
+            {
+                <div class="mb-2">
+                    Current File:
+                    <a href="~/uploads/contracts/@Model.AgreementFilePath"
+                       target="_blank" class="custom-btn custom-btn-info">
+                        View Current PDF
+                    </a>
+                </div>
+            }
+            <div class="form-group" style="margin-top: 15px;">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
@@ -63,7 +83,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index" class="custom-btn custom-btn-info" style="margin-top: 15px;">Back to List</a>
 </div>
 
 @section Scripts {

@@ -1,5 +1,6 @@
 ﻿using GLMS.Data;
 using GLMS.Models;
+using GLMS.Models.Enums;
 using GLMS.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -25,9 +26,36 @@ namespace GLMS.Controllers
         }
 
         // GET: Contracts
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+    ContractStatus? status,
+    DateTime? startDate,
+    DateTime? endDate)
         {
-            var contracts = await _service.GetAllAsync();
+            var query = _context.Contracts
+                .Include(c => c.Client)
+                .AsQueryable();
+
+            if (status.HasValue)
+            {
+                query = query.Where(c => c.Status == status);
+            }
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(c => c.StartDate >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(c => c.EndDate <= endDate.Value);
+            }
+
+            ViewBag.Status = status;
+            ViewBag.StartDate = startDate;
+            ViewBag.EndDate = endDate;
+
+            var contracts = await query.ToListAsync();
+
             return View(contracts);
         }
 
@@ -203,6 +231,15 @@ namespace GLMS.Controllers
                 }
                 try
                 {
+                    if (agreementFile == null)
+                    {
+                        var existingContract = await _context.Contracts
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(c => c.Id == contract.Id);
+
+                        contract.AgreementFilePath =
+                            existingContract?.AgreementFilePath;
+                    }
                     _context.Update(contract);
 
                     await _context.SaveChangesAsync();
